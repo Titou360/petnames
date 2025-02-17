@@ -36,7 +36,7 @@ export default function LoginPage() {
 
       toast.success("Connexion réussie !");
       console.log("Redirection en cours...");
-      router.push("/dashboard");
+      router.push("/adminPage");
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message || "Une erreur est survenue");

@@ -21,7 +21,8 @@ export async function POST(req: Request) {
     );
 
     // ✅ Stocker le token dans les cookies avec Next.js
-    (await cookies()).set("token", token, {
+    const cookieStore = await cookies();
+    cookieStore.set("token", token, {
       path: "/",
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",

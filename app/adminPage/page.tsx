@@ -11,13 +11,16 @@ export default function DashboardPage() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/auth/me");
-        const data = await res.json();
+        const res = await fetch("/api/auth/me", {
+          method: "GET",
+          credentials: "include", // 🔥 Obligatoire pour inclure le cookie
+        });
 
+        const data = await res.json();
         if (!data.token) {
           router.push("/login");
         } else {
-          setUser("Utilisateur connecté"); // Remplace par l'email si nécessaire
+          setUser("Utilisateur connecté");
         }
       } catch (error) {
         console.error("Erreur lors de la récupération du token:", error);
@@ -28,12 +31,20 @@ export default function DashboardPage() {
     checkAuth();
   }, [router]);
 
-  const handleLogout = () => {
-    document.cookie =
-      "token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;"; // Supprime le cookie
-    toast.success("Déconnexion réussie !");
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+  
+      toast.success("Déconnexion réussie !");
+      router.push("/login");
+    } catch (error) {
+      console.error("Erreur lors de la déconnexion :", error);
+    }
   };
+  
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
