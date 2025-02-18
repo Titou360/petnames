@@ -12,15 +12,15 @@ export function middleware(req: NextRequest) {
   try {
     interface DecodedToken {
       role: string;
-      // add other properties as needed
+      permissions: string[]; // Ajouter permissions dans le token
     }
 
     const decoded: DecodedToken = jwt.verify(token, process.env.JWT_SECRET || "supersecret") as DecodedToken;
 
-    // 🔥 Vérifie si c'est une page Admin et si l'utilisateur a le rôle "admin"
+    // 🔥 Si l'utilisateur n'est pas autorisé à accéder à la page d'admin, on le redirige vers le login
     const isAdminRoute = req.nextUrl.pathname.startsWith("/adminpage");
-    if (isAdminRoute && decoded.role !== "admin") {
-      return NextResponse.redirect(new URL("/adminPage", req.url)); // 🚫 Redirige vers le Dashboard normal
+    if (isAdminRoute && !decoded.permissions.includes("write")) { // Admin a besoin de la permission "write"
+      return NextResponse.redirect(new URL("/login", req.url)); // 🚫 Si non admin, on redirige
     }
 
     return NextResponse.next();
@@ -32,3 +32,4 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ["/adminpage/:path*"], // 🔥 Protection des routes sensibles
 };
+
