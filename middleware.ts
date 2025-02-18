@@ -2,30 +2,33 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import jwt from "jsonwebtoken";
 
-// Liste des pages protégées
-const protectedRoutes = ["/adminPage"];
-
 export function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
-  const url = req.nextUrl.clone();
 
-  if (protectedRoutes.includes(url.pathname)) {
-    if (!token) {
-      url.pathname = "/login"; // Redirection vers login
-      return NextResponse.redirect(url);
-    }
-
-    try {
-      jwt.verify(token, process.env.JWT_SECRET || "supersecret"); // Vérification du token
-    } catch {
-      url.pathname = "/login"; // Redirection si le token est invalide
-      return NextResponse.redirect(url);
-    }
+  if (!token) {
+    return NextResponse.redirect(new URL("/login", req.url));
   }
 
-  return NextResponse.next(); // Continuer normalement si tout est OK
+  try {
+    interface DecodedToken {
+      role: string;
+      // add other properties as needed
+    }
+
+    const decoded: DecodedToken = jwt.verify(token, process.env.JWT_SECRET || "supersecret") as DecodedToken;
+
+    // 🔥 Vérifie si c'est une page Admin et si l'utilisateur a le rôle "admin"
+    const isAdminRoute = req.nextUrl.pathname.startsWith("/adminpage");
+    if (isAdminRoute && decoded.role !== "admin") {
+      return NextResponse.redirect(new URL("/adminPage", req.url)); // 🚫 Redirige vers le Dashboard normal
+    }
+
+    return NextResponse.next();
+  } catch {
+    return NextResponse.redirect(new URL("/login", req.url));
+  }
 }
 
 export const config = {
-  matcher: "/dashboard", // Middleware appliqué uniquement sur /dashboard
+  matcher: ["/adminpage/:path*"], // 🔥 Protection des routes sensibles
 };
