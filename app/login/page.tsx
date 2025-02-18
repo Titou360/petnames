@@ -11,7 +11,11 @@ interface FormData {
 }
 
 export default function LoginPage() {
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>();
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -24,17 +28,14 @@ export default function LoginPage() {
         body: JSON.stringify(data),
         credentials: "include", // 🔥 Important : pour inclure les cookies
       });
-  
       const result = await response.json();
       if (!response.ok) {
         throw new Error(result.error);
       }
-  
+
       toast.success("Connexion réussie !");
       console.log("Redirection en cours...");
-      window.location.href = "/dashboard";
-
-      
+      router.push("/adminPage");
     } catch (error: unknown) {
       if (error instanceof Error) {
         toast.error(error.message || "Une erreur est survenue");
@@ -45,7 +46,6 @@ export default function LoginPage() {
       setLoading(false);
     }
   };
-  
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100">
@@ -54,27 +54,31 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <label className="block text-sm font-medium">Email</label>
-            <input 
-              type="email" 
-              {...register("email", { required: "Email requis" })} 
-              className="w-full mt-1 p-2 border rounded-md" 
+            <input
+              type="email"
+              {...register("email", { required: "Email requis" })}
+              className="w-full mt-1 p-2 border rounded-md"
             />
-            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-red-500 text-sm">{errors.email.message}</p>
+            )}
           </div>
 
           <div>
             <label className="block text-sm font-medium">Mot de passe</label>
-            <input 
-              type="password" 
-              {...register("password", { required: "Mot de passe requis" })} 
-              className="w-full mt-1 p-2 border rounded-md" 
+            <input
+              type="password"
+              {...register("password", { required: "Mot de passe requis" })}
+              className="w-full mt-1 p-2 border rounded-md"
             />
-            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-red-500 text-sm">{errors.password.message}</p>
+            )}
           </div>
 
-          <button 
-            type="submit" 
-            className="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition" 
+          <button
+            type="submit"
+            className="w-full p-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
             disabled={loading}
           >
             {loading ? "Connexion..." : "Se connecter"}
